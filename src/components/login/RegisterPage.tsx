@@ -11,7 +11,9 @@ import { City, Country, State } from "@/types/data.types";
 import { useStates } from "@/hooks/useStates";
 import { useCities } from "@/hooks/useCities";
 import { Link } from "react-router-dom";
-
+import { register as registerApi } from "@/api/auth";
+import { RegisterRequest, RegisterResponse } from "@/types/auth.type";
+import { BaseResponse } from "@/types/api.types";
 const RegisterPage = () => {
   const { Formik } = formik;
   const formikRef = useRef<any>(null);
@@ -61,49 +63,78 @@ const RegisterPage = () => {
   const dispatch = useDispatch();
 
   const [formData, setFormData] = useState<{
-    country: string,
-    state: string,
-    city: string,
+    country: string;
+    state: string;
+    city: string;
   }>({
     country: "",
     state: "",
-    city: ""
+    city: "",
   });
-  
+
   const filteredCountryData: Country[] = useCountries();
-  const filteredStateData: State[]  = useStates(formData?.country || "");
+  const filteredStateData: State[] = useStates(formData?.country || "");
   const filteredCityData: City[] = useCities(formData?.state || "");
 
   const handleSelectChange = async (e: any) => {
     const { value, name } = e.target;
-    setFormData({...formData, [name]: value });
-  }
+    setFormData({ ...formData, [name]: value });
+  };
 
-  const onSubmit = async (values: any) => {
-    const uniqueId = `${Date.now()}`;
-
-    const newRegistration = { ...values, uid: uniqueId };
-
-    const existingRegistrations = JSON.parse(
-      localStorage.getItem("registrationData") || "[]"
-    );
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "registrationData",
-        JSON.stringify([...existingRegistrations, newRegistration])
-      );
-      localStorage.setItem("login_user", JSON.stringify(newRegistration));
-      dispatch(login(newRegistration));
-
-      navigate("/");
+  const onSubmit = async (values: any, { setSubmitting, restForm }: any) => {
+    try {
+      const registerData: RegisterRequest = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        password: values.password,
+        confirmPassword: values.confirmPassword,
+        email: values.email,
+        phoneNumber: values.phoneNumber,
+        addressLine1: values.address,
+        country: values.country,
+        regionState: values.state,
+        city: values.city,
+        postalCode: values.postCode,
+      };
+      const response: BaseResponse<any> = await registerApi(registerData, {
+        skipAuth: true,
+      });
+      if (response && response.code === 201) {
+        alert("Registration successful!");
+        if (formikRef.current) {
+          formikRef.current.resetForm();
+        }
+        console.log("Registration successful:", response.data);
+        navigate("/");
+      } else {
+        console.error("Registration failed:", response.message);
+      }
+    } catch (error: any) {
+      console.error("An error occurred during registration:", error);
+    } finally {
+      setSubmitting(false);
     }
+    // const uniqueId = `${Date.now()}`;
 
-    // Reset form after successful submission
-    if (formikRef.current) {
-      formikRef.current.resetForm();
-    }
-  };  
+    // const newRegistration = { ...values, uid: uniqueId };
+
+    // const existingRegistrations = JSON.parse(
+    //   localStorage.getItem("registrationData") || "[]"
+    // );
+
+    // if (typeof window !== "undefined") {
+    //   localStorage.setItem(
+    //     "registrationData",
+    //     JSON.stringify([...existingRegistrations, newRegistration])
+    //   );
+    //   localStorage.setItem("login_user", JSON.stringify(newRegistration));
+    //   dispatch(login(newRegistration));
+
+    //   navigate("/");
+    // }
+
+    // // Reset form after successful submission
+  };
 
   return (
     <>
@@ -131,6 +162,7 @@ const RegisterPage = () => {
                       handleChange,
                       values,
                       errors,
+                      isSubmitting,
                     }) => (
                       <>
                         <Form noValidate onSubmit={handleSubmit}>
@@ -361,18 +393,21 @@ const RegisterPage = () => {
                                 <option value="" disabled>
                                   Region/State
                                 </option>
-                                
-                                {filteredStateData && filteredStateData.length == 0 ? (
+
+                                {filteredStateData &&
+                                filteredStateData.length == 0 ? (
                                   <option disabled>Loading...</option>
                                 ) : (
-                                  filteredStateData.map((state: State, index) => (
-                                    <option
-                                      key={index}
-                                      value={state.state_code}
-                                    >
-                                      {state.name}
-                                    </option>
-                                  ))
+                                  filteredStateData.map(
+                                    (state: State, index) => (
+                                      <option
+                                        key={index}
+                                        value={state.state_code}
+                                      >
+                                        {state.name}
+                                      </option>
+                                    )
+                                  )
                                 )}
                               </Form.Select>
                             </Form.Group>
@@ -407,7 +442,8 @@ const RegisterPage = () => {
                                 <option value="" disabled>
                                   City
                                 </option>
-                                {filteredCityData && filteredCityData.length == 0 ? (
+                                {filteredCityData &&
+                                filteredCityData.length == 0 ? (
                                   <option disabled>Loading...</option>
                                 ) : (
                                   filteredCityData.map((city: City, index) => (
@@ -471,8 +507,12 @@ const RegisterPage = () => {
                               Already have an account?
                               <Link to="/login">Login</Link>
                             </span>
-                            <button className="gi-btn-1" type="submit">
-                              Register
+                            <button
+                              className="gi-btn-1"
+                              type="submit"
+                              disabled={isSubmitting}
+                            >
+                              {isSubmitting ? "Registing..." : "Register"}
                             </button>
                           </span>
                         </Form>
