@@ -100,7 +100,7 @@ const RegisterPage = () => {
         skipAuth: true,
       });
       if (response && response.code === 201) {
-        alert("Registration successful!");
+        // alert("Registration successful!");
         if (formikRef.current) {
           formikRef.current.resetForm();
         }
