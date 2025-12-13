@@ -1,19 +1,17 @@
-import { useRef, useState } from "react";
+import {useRef, useState} from "react";
 import Breadcrumb from "../breadcrumb/Breadcrumb";
-import { useDispatch } from "react-redux";
-import { Form } from "react-bootstrap";
+import {Form} from "react-bootstrap";
 import * as formik from "formik";
 import * as yup from "yup";
-import { login } from "@/store/reducers/registrationSlice";
-import { useNavigate } from "react-router-dom";
-import { useCountries } from "@/hooks/useCountries";
-import { City, Country, State } from "@/types/data.types";
-import { useStates } from "@/hooks/useStates";
-import { useCities } from "@/hooks/useCities";
-import { Link } from "react-router-dom";
-import { register as registerApi } from "@/api/auth";
-import { RegisterRequest, RegisterResponse } from "@/types/auth.type";
-import { BaseResponse } from "@/types/api.types";
+import {Link, useNavigate} from "react-router-dom";
+import {useCountries} from "@/hooks/useCountries";
+import {City, Country, State} from "@/types/data.types";
+import {useStates} from "@/hooks/useStates";
+import {useCities} from "@/hooks/useCities";
+import {register as registerApi} from "@/api/auth";
+import {RegisterRequest} from "@/types/auth.type";
+import {BaseResponse} from "@/types/api.types";
+
 const RegisterPage = () => {
   const { Formik } = formik;
   const formikRef = useRef<any>(null);
@@ -60,7 +58,6 @@ const RegisterPage = () => {
   };
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState<{
     country: string;
@@ -81,7 +78,7 @@ const RegisterPage = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const onSubmit = async (values: any, { setSubmitting, restForm }: any) => {
+  const onSubmit = async (values: any, { setSubmitting }: any) => {
     try {
       const registerData: RegisterRequest = {
         firstName: values.firstName,
