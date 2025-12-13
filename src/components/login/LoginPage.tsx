@@ -32,6 +32,10 @@ const LoginPage = () => {
     (state: RootState) => state.registration.isAuthenticated
   );
 
+
+
+
+
   useEffect(() => {
     const storedRegistrations = JSON.parse(
       localStorage.getItem("registrationData") || "[]"
