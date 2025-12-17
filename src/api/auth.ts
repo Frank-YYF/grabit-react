@@ -15,5 +15,6 @@ export const register = async (
     data,
     config
   );
+
   return response.data;
 };
